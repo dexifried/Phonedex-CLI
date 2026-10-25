@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1460" role="img" aria-labelledby="title desc">
+  <title id="title">PhoneDex CLI integration architecture</title>
+  <desc id="desc">PhoneDex CLI runs as an optional local interface to the separate PhoneDex core. The core owns the SIP and media path to a carrier and GPT Live, plus an optional outbound-polling Cloudflare Worker controller. The CLI does not contact these services directly.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080b16"/>
+      <stop offset=".55" stop-color="#0b1430"/>
+      <stop offset="1" stop-color="#11102b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#56c8ff"/>
+      <stop offset=".52" stop-color="#6376ff"/>
+      <stop offset="1" stop-color="#a276ff"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#111c3a"/>
+      <stop offset="1" stop-color="#211a45"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#8296ff"/>
+    </marker>
+    <marker id="arrow-start" markerWidth="10" markerHeight="10" refX="2" refY="5" orient="auto">
+      <path d="M10 0 0 5 10 10z" fill="#8296ff"/>
+    </marker>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .label{font:700 20px 'Segoe UI',Inter,Arial,sans-serif;letter-spacing:2.2px;fill:#98b4ff}
+      .title{font:650 35px 'Segoe UI',Inter,Arial,sans-serif;fill:#f4f7ff}
+      .body{font:400 25px 'Segoe UI',Inter,Arial,sans-serif;fill:#c6d0eb}
+      .small{font:400 21px 'Segoe UI',Inter,Arial,sans-serif;fill:#aebcda}
+      .card{fill:#0a1124;stroke:#34456e;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="800" height="1320" rx="28" fill="url(#bg)"/>
+  <circle cx="90" cy="280" r="185" fill="#1e57dc" opacity=".11" filter="url(#glow)"/>
+  <circle cx="720" cy="970" r="220" fill="#704bff" opacity=".10" filter="url(#glow)"/>
+
+  <text x="62" y="63" class="label">OPTIONAL CONTROL SURFACE</text>
+  <text x="62" y="105" class="small">Two projects, with clear ownership boundaries</text>
+
+  <rect x="52" y="145" width="696" height="198" rx="23" fill="#0b142a" stroke="url(#accent)" stroke-width="3"/>
+  <circle cx="94" cy="190" r="17" fill="url(#accent)"/>
+  <path d="M83 191h7l5-8 6 16 5-11h8" fill="none" stroke="#f6f8ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="128" y="201" class="title">PhoneDex CLI</text>
+  <text x="80" y="250" class="body">Optional Rich terminal interface</text>
+  <text x="80" y="292" class="small">wizard · status · doctor · settings · guarded dial</text>
+  <text x="80" y="323" class="small">Local CLI config and managed-controller records</text>
+
+  <path d="M400 345v65" stroke="#8296ff" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="430" y="385" class="small">local subprocess</text>
+
+  <rect x="52" y="425" width="696" height="194" rx="23" fill="url(#core)" stroke="#6659db" stroke-width="2"/>
+  <text x="80" y="476" class="label">SEPARATE REPOSITORY</text>
+  <text x="80" y="521" class="title">PhoneDex core</text>
+  <text x="80" y="563" class="body">Official setup, doctor, dial and controller commands</text>
+  <text x="80" y="597" class="small">Owns provider config, telephony and voice runtime</text>
+
+  <path d="M400 622v42" stroke="#9b7aff" stroke-width="3" stroke-dasharray="7 7" marker-start="url(#arrow-start)" marker-end="url(#arrow)"/>
+  <text x="428" y="650" class="small">outbound HTTPS poll</text>
+  <rect x="80" y="670" width="640" height="112" rx="20" fill="#100f28" stroke="#7258c7" stroke-width="2"/>
+  <text x="400" y="716" class="title" text-anchor="middle">Optional Cloudflare Worker</text>
+  <text x="400" y="755" class="small" text-anchor="middle">Call requests and control settings</text>
+
+  <text x="62" y="836" class="label">CORE-OWNED VOICE PATH</text>
+  <rect x="80" y="867" width="640" height="112" rx="20" class="card"/>
+  <text x="400" y="913" class="title" text-anchor="middle">SIP carrier / trunk</text>
+  <text x="400" y="953" class="small" text-anchor="middle">Phone network and call signaling</text>
+
+  <path d="M400 985v48" stroke="#8296ff" stroke-width="4" marker-start="url(#arrow-start)" marker-end="url(#arrow)"/>
+  <text x="428" y="1017" class="small">SIP/TLS · SRTP</text>
+
+  <rect x="80" y="1045" width="640" height="130" rx="20" fill="#111a35" stroke="#5268b8" stroke-width="2"/>
+  <text x="400" y="1095" class="title" text-anchor="middle">PhoneDex SIP / media bridge</text>
+  <text x="400" y="1136" class="small" text-anchor="middle">RTP/SRTP audio handling and call control</text>
+
+  <path d="M400 1178v48" stroke="#8296ff" stroke-width="4" marker-start="url(#arrow-start)" marker-end="url(#arrow)"/>
+  <text x="428" y="1210" class="small">live audio session</text>
+
+  <rect x="80" y="1238" width="640" height="112" rx="20" class="card"/>
+  <text x="400" y="1284" class="title" text-anchor="middle">GPT Live</text>
+  <text x="400" y="1324" class="small" text-anchor="middle">Undocumented subscription endpoint</text>
+
+  <text x="400" y="1405" font-family="'Segoe UI',Inter,Arial,sans-serif" font-size="20" fill="#9eabc9" text-anchor="middle">The CLI has no direct connection to these services.</text>
+</svg>

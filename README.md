@@ -1,97 +1,128 @@
-# PhoneDex CLI
+<div align="center">
+  <img src="assets/branding/hero.jpg" alt="PhoneDex CLI — optional terminal control deck for PhoneDex" width="100%" />
+</div>
 
-**An optional, colorful terminal control deck for [PhoneDex](https://github.com/dexifried/Phonedex).**
+<h1 align="center">PhoneDex CLI</h1>
 
-A Rich-powered ASCII dashboard, short startup animations, step-by-step setup, diagnostic panels, a managed-controller switchboard, and safe calling controls. **PhoneDex CLI is a separate frontend**, not a fork of the SIP bridge. Uninstalling it leaves PhoneDex's existing installation, config, and calls intact.
+<p align="center">
+  An optional, local-first terminal interface for setup, diagnostics and guarded control of a PhoneDex installation.<br />
+  <strong>It is a separate frontend. The PhoneDex core owns telephony, voice sessions and Worker integrations.</strong>
+</p>
 
-```text
-  ____  _                     ____
- |  _ \| |__   ___  _ __   ___|  _ \  _____  __
- | |_) | '_ \ / _ \| '_ \ / _ \ | | |/ _ \ \/ /
- |  __/| | | | (_) | | | |  __/ |_| |  __/>  <
- |_|   |_| |_|\___/|_| |_|\___|____/ \___/_/\_\
+<p align="center">
+  <a href="https://github.com/dexifried/Phonedex-CLI/actions/workflows/ci.yml"><img src="https://github.com/dexifried/Phonedex-CLI/actions/workflows/ci.yml/badge.svg?branch=main" alt="CLI offline tests" /></a>
+  <a href="https://pypi.org/project/phonedex-cli/"><img src="https://img.shields.io/pypi/v/phonedex-cli" alt="PyPI version" /></a>
+  <img src="https://img.shields.io/badge/python-3.11%2B-3776ab" alt="Python 3.11 and newer" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-5b6b8f" alt="MIT license" /></a>
+  <img src="https://img.shields.io/badge/status-alpha-8b6cff" alt="Alpha release" />
+</p>
 
-    TERMINAL CONTROL // an optional PhoneDex companion
-```
+## What it does
+
+PhoneDex CLI is a [Rich](https://github.com/Textualize/rich)-powered Python control deck for the separate [PhoneDex](https://github.com/dexifried/Phonedex) project. It guides setup, runs the core's read-only readiness checks, edits a small allowlist of non-credential local settings, and manages only a controller process that it started itself.
+
+It does not implement SIP, provision a phone provider, or connect directly to GPT Live. The CLI delegates supported actions to the official commands in a PhoneDex checkout.
+
+## Features
+
+- **Guided setup:** select or clone the official public PhoneDex checkout, optionally run its bootstrap and setup flows, and run diagnostics.
+- **Readiness and status:** display local configuration and inspect the PhoneDex core through its own setup checks and doctor.
+- **Scoped controller management:** start, stop, or restart only a controller process registered by this CLI; a start or restart can dispatch work already queued in your Worker.
+- **Local privacy settings:** edit transcript mode, local retention, daily call cap and the outbound recipient allowlist without exposing other `.env` values.
+- **Dry-run-first dialing:** validate an E.164 number against the configured allowlist; live calls require `--place-call` and an interactive confirmation by default.
+- **Terminal-friendly output:** use `--no-color` and `--no-animation` in constrained terminals or scripts.
+
+## Architecture
+
+The CLI stays on the local control side. It invokes PhoneDex core commands as subprocesses; the core owns the SIP/media path and any optional Worker polling.
+
+<div align="center">
+  <img src="assets/branding/architecture.svg" alt="PhoneDex CLI invokes the separate PhoneDex core locally; the core owns SIP, media, GPT Live, and optional Worker integrations." width="100%" />
+</div>
+
+See [architecture and privacy notes](docs/ARCHITECTURE.md) for configuration paths, process ownership and side-effect boundaries.
 
 ## Quickstart
 
-Install the [published PyPI package](https://pypi.org/project/phonedex-cli/) on Python **3.11+**. Using [pipx](https://pipx.pypa.io/) provides an isolated CLI environment:
+### Requirements
+
+- Python **3.11 or newer**.
+- `pipx` is recommended for an isolated install. Git is needed only if the wizard clones the PhoneDex core.
+- To use live voice features, complete the PhoneDex core's own Codex login and provider setup. Installing this CLI does not configure those services.
+
+### Install and connect
 
 ```bash
 pipx install phonedex-cli
-phonedex-cli wizard  # first-time setup
-phonedex-cli         # animated control deck
+phonedex-cli --version
+phonedex-cli wizard
 ```
 
-Alternatively, use `python -m pip install phonedex-cli` in an existing virtual environment. On some systems use `python3` instead of `python`.
+The wizard asks whether to use an existing PhoneDex checkout or clone the official public repository. It asks before running the core bootstrap, Codex login, setup wizard or diagnostics. **It does not place a call.**
 
-To develop from source, clone or unpack this separate repository and run `python -m pip install -e .`. Git is only needed when cloning PhoneDex or this repository. The current published release is **v0.1.0**; see [PyPI](https://pypi.org/project/phonedex-cli/0.1.0/) and the [tagged source](https://github.com/dexifried/Phonedex-CLI/tree/v0.1.0).
+To use `pip` in an existing virtual environment instead:
 
-### Existing PhoneDex installation?
+```bash
+python -m pip install phonedex-cli
+```
 
-Either choose **existing** in `phonedex-cli wizard` or use:
+To connect to an existing checkout directly, pass its path before the subcommand:
 
 ```bash
 phonedex-cli --checkout /path/to/Phonedex status
 phonedex-cli --checkout /path/to/Phonedex doctor --mode local
 ```
 
-`PHONEDEX_HOME=/path/to/Phonedex` is also supported. The wizard saves the source path to a local config file, not the PhoneDex checkout. It never overwrites an existing `.env`.
+`PHONEDEX_HOME` can also point to the core checkout. An explicit `--checkout` takes precedence.
 
-### Commands
+## Commands
 
-| Command | Behavior |
+| Command | Purpose |
 | --- | --- |
-| `phonedex-cli` or `phonedex-cli menu` | Interactive ASCII/Rich terminal dashboard |
-| `phonedex-cli wizard` | Link/clone source, run optional bootstrap, local Codex login, delegate to official setup, inspect diagnostics |
-| `phonedex-cli doctor --mode local` | Official read-only source checks; change to `remote` when using a Worker |
-| `phonedex-cli setup --mode local` | Delegates to the existing core setup wizard |
-| `phonedex-cli status` | Local checkout, Codex command presence, privacy mode, CLI-managed process state |
-| `phonedex-cli start` | Start a CLI-managed controller **only with confirmation**; queued work can dispatch calls |
-| `phonedex-cli stop` | Stop **only** the controller this CLI started and recorded |
-| `phonedex-cli restart` | Confirm and restart a CLI-managed controller |
-| `phonedex-cli logs --lines 40` | Recent managed-controller logs (best-effort masking of secret-bearing lines) |
-| `phonedex-cli settings` | Private local editor: transcripts, retention, daily call cap, allowlisted phone numbers |
-| `phonedex-cli dial --to +14165550123` | Allowlisted **dry run** (no call) |
-| `phonedex-cli dial --to +14165550123 --place-call` | Explicit, **potentially billable** real call, requires confirmation |
+| `phonedex-cli` or `phonedex-cli menu` | Open the interactive control deck. |
+| `phonedex-cli wizard` | Link or clone the core and step through optional setup actions. |
+| `phonedex-cli status` | Show the core checkout and controller state. |
+| `phonedex-cli doctor --mode local` or `phonedex-cli doctor --mode remote` | Run the core setup readiness check and read-only doctor. |
+| `phonedex-cli setup --mode local` or `phonedex-cli setup --mode remote` | Open the official PhoneDex setup wizard after confirmation. |
+| `phonedex-cli start`, `phonedex-cli stop`, `phonedex-cli restart` | Manage a controller started and recorded by this CLI. |
+| `phonedex-cli logs --lines 40` | Read recent CLI-managed controller logs. Secret-line masking is best-effort. |
+| `phonedex-cli settings` | Edit the supported operational PhoneDex settings. |
+| `phonedex-cli dial --to "$DESTINATION"` | Validate an allowlisted destination and run a dry run. |
+| `phonedex-cli dial --to "$DESTINATION" --place-call` | Request a real, potentially billable call after confirmation. |
 
-Use `--no-color --no-animation` for inaccessible or non-interactive terminals. Animation is automatically disabled when the output isn't a terminal or when `CI` is set. `--yes` applies **only** to `dial --place-call` and bypasses its second confirmation for deliberate automation; it still requires an allowlisted number and upstream PhoneDex safeguards.
+`dial` supports `normal` and `business` modes, with a duration of 20–300 seconds.
+Replace `$DESTINATION` in the examples with an E.164 number already listed in `PHONEDEX_ALLOWED_RECIPIENTS`.
 
-## Architecture and privacy
+The `--yes` flag only applies to `dial --place-call`; it skips the interactive confirmation for deliberate automation. It still requires an allowlisted number and the PhoneDex core's own safeguards. Keep it out of unattended jobs unless that behavior is intended.
 
-```text
-phonedex-cli (optional UI)
-     │
-     ├─ ~/.config/phonedex-cli/config.json  → installed source path only
-     ├─ controller.json / controller.log    → CLI-managed subprocess only
-     │
-     └─ invokes official PhoneDex commands:
-          phonedex.py setup / doctor / dial / controller
-                         │
-          core .env, SIP gateway, GPT Live, optional Worker
-```
+## Privacy and safety
 
-- The CLI does **not** request or store SIP passwords, OAuth tokens, or AgentPhone keys. The official PhoneDex setup handles provider secrets privately.
-- The separate CLI only edits four whitelisted **non-secret** `.env` settings. It uses owner-restricted atomic replacement on POSIX, preserves unrelated variables and comments, and refuses symlink writes.
-- Configuration edits take effect for new PhoneDex processes. An already-running controller generally needs a restart; this CLI never restarts it automatically.
-- The CLI does **not** configure DNS, TLS certificates, Cloudflare resources, firewalls, port forwarding, telephony numbers, or SIP trunks.
-- Setup, status, diagnostics, and default dialing perform **no real phone call**. Starting the controller can execute requests already queued in a configured Worker; it requires confirmation.
-- Transcript storage defaults to `off` in the core. Choosing `worker` or `both` shares transcript text with **your own** Worker/KV. Changes apply to new calls and don't erase existing data.
-- The log viewer masks lines with common secret labels on a best-effort basis. Logs may still reveal phone numbers, call content, and metadata. Do not publish raw logs.
-- The controller PID registry records creation time and exact script path. **Stop will refuse** to terminate an unrelated process or a stale/reused PID. Controllers started outside this CLI are deliberately not managed.
-- Operational correctness and carrier compatibility depend on the PhoneDex core and your provider. Use [PhoneDex's release status](https://github.com/dexifried/Phonedex/blob/main/docs/RELEASE_STATUS.md).
+- PhoneDex CLI does not collect SIP passwords, Codex tokens or AgentPhone keys. The official PhoneDex setup flow handles provider credentials.
+- The CLI preference file stores the selected source path. The CLI-managed controller registry and log are stored separately from the PhoneDex checkout.
+- `settings` changes only `PHONEDEX_TRANSCRIPT_MODE`, `PHONEDEX_TRANSCRIPT_RETENTION_DAYS`, `PHONEDEX_MAX_CALLS_PER_DAY` and `PHONEDEX_ALLOWED_RECIPIENTS`. It preserves other `.env` entries and refuses symlink writes. Allowlisted numbers are private data; keep the `.env` and screenshots out of public reports.
+- The core defaults transcript storage to `off`. Choosing `worker` or `both` sends transcript text to **your configured Worker/KV** after a confirmation. Changes affect new calls and do not erase existing transcripts.
+- The log viewer masks lines containing common secret labels on a best-effort basis. Logs can still contain phone numbers, call content and metadata; do not publish raw logs.
+- `stop` verifies the recorded PID, process start time and exact core script path before terminating anything. It will not stop an unrelated or externally managed controller.
+- Starting or restarting the local controller can dispatch queued Worker requests and trigger a call. Keep caller allowlists and billing limits configured in the core.
 
-**Note:** PhoneDex uses an undocumented GPT Live subscription endpoint. Its availability and permission to use it may change. This CLI provides no guarantee of service or compliant use and is not affiliated with OpenAI, Codex, or AgentPhone.
+The PhoneDex core uses an undocumented GPT Live subscription endpoint. Availability and authorization may change. PhoneDex CLI is not affiliated with OpenAI, Codex or AgentPhone and makes no service or compatibility guarantee. See the core's [release status](https://github.com/dexifried/Phonedex/blob/main/docs/RELEASE_STATUS.md).
 
 ## Development
 
 ```bash
+git clone https://github.com/dexifried/Phonedex-CLI.git
+cd Phonedex-CLI
 python -m pip install -e . pytest
 python -m pytest -q
-python -m phonedex_cli --no-animation --no-color status
+phonedex-cli --no-animation --no-color status
 ```
 
-Offline tests cover config preservation, allowlisting, confirmation gates, symlink protection, stale-process safety, and dry-run defaults. CI is configured for Windows, Linux and macOS, but actual results depend on running the workflow. Live carrier calls are **not** part of these tests.
+The offline suite covers configuration preservation, allowlisting, confirmation gates, symlink protection, process ownership and dry-run defaults. GitHub Actions targets Windows, Linux and macOS on Python 3.11 and 3.13. **Tests do not place live calls.**
 
-Licensed MIT. © 2026 Austin Harvey.
+For contribution and publishing details, see [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/PUBLISHING.md](docs/PUBLISHING.md).
+
+## Release and attribution
+
+The published package is currently **alpha v0.1.0**: [PyPI](https://pypi.org/project/phonedex-cli/0.1.0/) · [source tag](https://github.com/dexifried/Phonedex-CLI/tree/v0.1.0). Releases use PyPI Trusted Publishing; see the [publishing guide](docs/PUBLISHING.md).
+
+PhoneDex CLI is maintained by **Austin Harvey** and released under the [MIT License](LICENSE). It is a separate companion project to PhoneDex by **Dexifyz**; it invokes the core's public commands and does not bundle its SIP engine. PhoneDex CLI is not endorsed by or affiliated with OpenAI.
