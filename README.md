@@ -16,21 +16,17 @@ A Rich-powered ASCII dashboard, short startup animations, step-by-step setup, di
 
 ## Quickstart
 
-Requires Python **3.11+**. Linux, macOS and Windows use the same commands. Git is needed **only** if you want the CLI to clone PhoneDex for you.
+Install the [published PyPI package](https://pypi.org/project/phonedex-cli/) on Python **3.11+**. Using [pipx](https://pipx.pypa.io/) provides an isolated CLI environment:
 
 ```bash
-# Clone or unpack this separate phonedex-cli project
-cd phonedex-cli
-python -m pip install -e .
-
-# First-time users: interactive setup wizard
-phonedex-cli wizard
-
-# Regular users: animated control deck
-phonedex-cli
+pipx install phonedex-cli
+phonedex-cli wizard  # first-time setup
+phonedex-cli         # animated control deck
 ```
 
-On some systems use `python3` and `python3 -m pip`. The installation above is editable/developer mode; end users can instead use `python -m pip install .` from the unpacked project. For isolation use a dedicated virtual environment. **This repository has not yet been released on PyPI.** Do not assume `pip install phonedex-cli` works from PyPI.
+Alternatively, use `python -m pip install phonedex-cli` in an existing virtual environment. On some systems use `python3` instead of `python`.
+
+To develop from source, clone or unpack this separate repository and run `python -m pip install -e .`. Git is only needed when cloning PhoneDex or this repository. The current published release is **v0.1.0**; see [PyPI](https://pypi.org/project/phonedex-cli/0.1.0/) and the [tagged source](https://github.com/dexifried/Phonedex-CLI/tree/v0.1.0).
 
 ### Existing PhoneDex installation?
 
