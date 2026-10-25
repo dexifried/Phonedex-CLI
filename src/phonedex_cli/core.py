@@ -20,7 +20,8 @@ import psutil
 UPSTREAM = "https://github.com/dexifried/Phonedex.git"
 E164 = re.compile(r"\+[1-9]\d{6,14}\Z")
 CONFIGURABLE = {"PHONEDEX_TRANSCRIPT_MODE", "PHONEDEX_TRANSCRIPT_RETENTION_DAYS",
-                "PHONEDEX_MAX_CALLS_PER_DAY", "PHONEDEX_ALLOWED_RECIPIENTS"}
+                "PHONEDEX_MAX_CALLS_PER_DAY", "PHONEDEX_ALLOWED_RECIPIENTS",
+                "PHONEDEX_MEDIA_PORT_FORWARDED"}
 SENSITIVE = re.compile(r"(password|token|secret|api.?key|authorization|bearer)", re.I)
 
 
@@ -142,6 +143,8 @@ def update_env(path: Path, key: str, value: str) -> None:
         raise ValueError("Retention must be 1–90 days")
     if key == "PHONEDEX_MAX_CALLS_PER_DAY" and not (value.isascii() and value.isdecimal() and 1 <= int(value) <= 1000):
         raise ValueError("Daily limit must be 1–1000")
+    if key == "PHONEDEX_MEDIA_PORT_FORWARDED" and value not in {"0", "1"}:
+        raise ValueError("Port-forwarding confirmation must be 0 or 1")
     if key == "PHONEDEX_ALLOWED_RECIPIENTS":
         numbers = [n.strip() for n in value.split(",") if n.strip()]
         if any(not E164.fullmatch(n) for n in numbers) or len(numbers) != len(set(numbers)):

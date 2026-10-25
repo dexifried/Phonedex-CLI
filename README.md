@@ -25,7 +25,7 @@ It does not implement SIP, provision a phone provider, or connect directly to GP
 
 ## Features
 
-- **Guided setup:** select or clone the official public PhoneDex checkout, optionally run its bootstrap and setup flows, and run diagnostics.
+- **Windows-first guided setup:** select or clone the official public PhoneDex checkout, prepare a private Python environment, install missing prerequisites with confirmation, verify Codex login, choose an AgentPhone SIP trunk or other provider, configure Windows networking, and perform diagnostics plus an optional first call.
 - **Readiness and status:** display local configuration and inspect the PhoneDex core through its own setup checks and doctor.
 - **Scoped controller management:** start, stop, or restart only a controller process registered by this CLI; a start or restart can dispatch work already queued in your Worker.
 - **Local privacy settings:** edit transcript mode, local retention, daily call cap and the outbound recipient allowlist without exposing other `.env` values.
@@ -50,6 +50,28 @@ See [architecture and privacy notes](docs/ARCHITECTURE.md) for configuration pat
 - `pipx` is recommended for an isolated install. Git is needed only if the wizard clones the PhoneDex core.
 - To use live voice features, complete the PhoneDex core's own Codex login and provider setup. Installing this CLI does not configure those services.
 
+### Windows: complete guided setup (recommended)
+
+On Windows 10/11, `phonedex-cli wizard` now walks you from a fresh machine
+through the PhoneDex source checkout, private Python environment, Codex CLI
+installation/sign-in, **AgentPhone SIP trunk selection/creation** (or another provider),
+provider credentials, Windows firewall/router setup, diagnostics, a dry run,
+and an explicitly approved first real call. You can quit and resume without
+overwriting an existing configuration.
+
+```powershell
+pipx install phonedex-cli
+phonedex-cli wizard
+```
+
+The wizard can ask to install missing Git/Node/Codex tools, but it will never
+install software, access AgentPhone with an API key, create a trunk, change the firewall,
+configure the router, or place a billable call without the relevant explicit
+approval. You will still need your own phone/SIP provider and router access;
+a local diagnostic check is **not** proof that a real call will work.
+
+**Detailed walkthrough:** [Windows setup from start to finish](docs/WINDOWS_SETUP.md).
+
 ### Install and connect
 
 ```bash
@@ -58,7 +80,7 @@ phonedex-cli --version
 phonedex-cli wizard
 ```
 
-The wizard asks whether to use an existing PhoneDex checkout or clone the official public repository. It asks before running the core bootstrap, Codex login, setup wizard or diagnostics. **It does not place a call.**
+On Windows, the wizard is a seven-stage, resumable setup journey, including optional read-only AgentPhone trunk discovery or consent-gated creation, Windows network guidance and a separate consent-gated first-call test. **No call is placed without explicit confirmation.** On other systems the legacy core setup menu remains available.
 
 To use `pip` in an existing virtual environment instead:
 
@@ -97,7 +119,7 @@ The `--yes` flag only applies to `dial --place-call`; it skips the interactive c
 
 ## Privacy and safety
 
-- PhoneDex CLI does not collect SIP passwords, Codex tokens or AgentPhone keys. The official PhoneDex setup flow handles provider credentials.
+- During Windows setup, SIP passwords are entered through a hidden local prompt (or obtained from the user's own AgentPhone trunk response) and saved by the official PhoneDex core in its private plaintext `.env`. Codex authentication uses the official local login flow. An optional AgentPhone API key is entered through a hidden local prompt, used only for trunk listing or separately approved trunk creation, and is never persisted.
 - The CLI preference file stores the selected source path. The CLI-managed controller registry and log are stored separately from the PhoneDex checkout.
 - `settings` changes only `PHONEDEX_TRANSCRIPT_MODE`, `PHONEDEX_TRANSCRIPT_RETENTION_DAYS`, `PHONEDEX_MAX_CALLS_PER_DAY` and `PHONEDEX_ALLOWED_RECIPIENTS`. It preserves other `.env` entries and refuses symlink writes. Allowlisted numbers are private data; keep the `.env` and screenshots out of public reports.
 - The core defaults transcript storage to `off`. Choosing `worker` or `both` sends transcript text to **your configured Worker/KV** after a confirmation. Changes affect new calls and do not erase existing transcripts.
@@ -123,6 +145,6 @@ For contribution and publishing details, see [CONTRIBUTING.md](CONTRIBUTING.md) 
 
 ## Release and attribution
 
-The published package is currently **alpha v0.1.0**: [PyPI](https://pypi.org/project/phonedex-cli/0.1.0/) · [source tag](https://github.com/dexifried/Phonedex-CLI/tree/v0.1.0). Releases use PyPI Trusted Publishing; see the [publishing guide](docs/PUBLISHING.md).
+The Windows-first setup release is **alpha v0.1.1**: [PyPI](https://pypi.org/project/phonedex-cli/0.1.1/) · [source tag](https://github.com/dexifried/Phonedex-CLI/tree/v0.1.1). Releases use PyPI Trusted Publishing; see the [publishing guide](docs/PUBLISHING.md).
 
 PhoneDex CLI is maintained by **Austin Harvey** and released under the [MIT License](LICENSE). It is a separate companion project to PhoneDex by **Dexifyz**; it invokes the core's public commands and does not bundle its SIP engine. PhoneDex CLI is not endorsed by or affiliated with OpenAI.
