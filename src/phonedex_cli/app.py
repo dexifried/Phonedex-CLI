@@ -127,6 +127,14 @@ class Cockpit:
         return subprocess.call(core.core_argv(root, "setup", "--mode", mode), cwd=root)
 
     def wizard(self) -> None:
+        """On Windows, complete the resumable seven-step setup journey."""
+        if sys.platform == "win32":
+            from . import windows_setup
+            windows_setup.run(self)
+        else:
+            self._legacy_wizard()
+
+    def _legacy_wizard(self) -> None:
         self.banner()
         self.console.print(Panel("[bold]1[/bold]  Connect a PhoneDex checkout\n[bold]2[/bold]  Prepare Python dependencies\n[bold]3[/bold]  Codex login (performed locally)\n[bold]4[/bold]  SIP/provider configuration\n[bold]5[/bold]  Read-only diagnostics", title="First-run wizard", border_style="bright_cyan"))
         root = self.root()
